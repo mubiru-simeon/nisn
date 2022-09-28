@@ -1,9 +1,17 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:csv/csv.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:nisn/models/nisn_data.dart';
+import 'package:nisn/services/auth_provider_widget.dart';
 import 'package:nisn/services/communications.dart';
+import 'package:nisn/services/navigation.dart';
 import 'package:nisn/widgets/custom_divider.dart';
 import 'package:nisn/widgets/informational_box.dart';
+import 'package:nisn/widgets/not_logged_in_dialog_box.dart';
 import 'package:nisn/widgets/or_divider.dart';
 import 'package:nisn/widgets/proceed_button.dart';
 import 'package:nisn/widgets/top_back_bar.dart';
@@ -65,9 +73,10 @@ class _SubmitDataBottomSheetState extends State<SubmitDataBottomSheet> {
                       ),
                       onTap: () async {
                         final rr = await FilePicker.platform.pickFiles(
-                          withData: true,
-                          allowMultiple: true,
-                        );
+                            withData: true,
+                            allowMultiple: true,
+                            type: FileType.custom,
+                            allowedExtensions: ["csv"]);
 
                         if (rr != null) {
                           setState(() {
@@ -326,7 +335,20 @@ class _SubmitDataBottomSheetState extends State<SubmitDataBottomSheet> {
           processing: processing,
           onTap: () {
             if (quotationDocuments.isNotEmpty) {
-              upload();
+              if (AuthProvider.of(context).auth.isSignedIn()) {
+                upload();
+              } else {
+                showDialog(
+                  context: context,
+                  builder: (context) {
+                    return NotLoggedInDialogBox(
+                      onLoggedIn: (v) {
+                        upload();
+                      },
+                    );
+                  },
+                );
+              }
             } else {
               if (latitude.text.trim().isEmpty) {
                 CommunicationServices().showToast(
@@ -382,7 +404,22 @@ class _SubmitDataBottomSheetState extends State<SubmitDataBottomSheet> {
                                   Colors.red,
                                 );
                               } else {
-                                upload();
+                                if (AuthProvider.of(context)
+                                    .auth
+                                    .isSignedIn()) {
+                                  upload();
+                                } else {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) {
+                                      return NotLoggedInDialogBox(
+                                        onLoggedIn: (v) {
+                                          upload();
+                                        },
+                                      );
+                                    },
+                                  );
+                                }
                               }
                             }
                           }
@@ -405,12 +442,96 @@ class _SubmitDataBottomSheetState extends State<SubmitDataBottomSheet> {
       processing = true;
     });
 
-    List pp = [];
+    if (quotationDocuments.isNotEmpty) {
+      List pp = [];
 
-    for (var e in quotationDocuments) {
-      List dd = CsvToListConverter().convert(e.path);
+      for (var e in quotationDocuments) {
+        final csvFile = File(e.path).openRead();
+        List df = await csvFile
+            .transform(utf8.decoder)
+            .transform(
+              CsvToListConverter(),
+            )
+            .toList();
 
-      print(dd.toString());
+        int headerIndex;
+
+        for (var v in df) {
+          if (v[0].contains("time")) {
+            headerIndex = df.indexOf(v);
+          }
+        }
+
+        if (headerIndex != null) {
+          df.removeAt(headerIndex);
+        }
+
+        for (var v in df) {
+          bool allGood = true;
+
+          v.forEach((b) {
+            if (b.toString().toLowerCase().contains("time")) {
+              allGood = false;
+            }
+          });
+
+          if (allGood) {
+            pp.add(v);
+          }
+        }
+      }
+
+      int count = 0;
+
+      for (var element in pp) {
+        FirebaseFirestore.instance.collection(NisnData.DIRECTORY).add({
+          NisnData.ADDER: AuthProvider.of(context).auth.getCurrentUID(),
+          NisnData.ALTITUDE: element[3],
+          NisnData.APPROVED: false,
+          NisnData.DATEADDED: DateTime.now().millisecondsSinceEpoch,
+          NisnData.TIME: DateTime.now().millisecondsSinceEpoch,
+          NisnData.GEOX: element[4],
+          NisnData.GEOY: element[5],
+          NisnData.GEOZ: element[6],
+          NisnData.GEOVX: element[7],
+          NisnData.GEOVY: element[8],
+          NisnData.GEOVZ: element[9],
+          if (element.length > 10) NisnData.ELECTRONDENSITY: element[10],
+        });
+
+        count++;
+      }
+
+      if (count == pp.length) {
+        CommunicationServices().showToast(
+          "Successfully added the data",
+          Colors.green,
+        );
+
+        NavigationService().pop();
+      }
+    } else {
+      FirebaseFirestore.instance.collection(NisnData.DIRECTORY).add({
+        NisnData.ADDER: AuthProvider.of(context).auth.getCurrentUID(),
+        NisnData.ALTITUDE: double.parse(altitude.text.trim()),
+        NisnData.APPROVED: false,
+        NisnData.DATEADDED: DateTime.now().millisecondsSinceEpoch,
+        NisnData.TIME: dateOfRecord.millisecondsSinceEpoch,
+        NisnData.GEOX: double.parse(geox.text.trim()),
+        NisnData.GEOY: double.parse(geoy.text.trim()),
+        NisnData.GEOZ: double.parse(geoz.text.trim()),
+        NisnData.GEOVX: double.parse(geovx.text.trim()),
+        NisnData.GEOVY: double.parse(geovy.text.trim()),
+        NisnData.GEOVZ: double.parse(geovz.text.trim()),
+        NisnData.ELECTRONDENSITY: double.parse(electronDensity.text.trim()),
+      }).then((value) {
+        CommunicationServices().showToast(
+          "Successfully added the record",
+          Colors.green,
+        );
+
+        NavigationService().pop();
+      });
     }
   }
 }

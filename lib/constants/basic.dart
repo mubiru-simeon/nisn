@@ -6,6 +6,7 @@ String appCatchPhrase =
 int versionNumber = 1;
 
 String simeonMessage = appCatchPhrase;
+String simeonWebsite = "bio.link/dorx";
 String allIndex = "allIndex";
 String dorxPhoneNumber = "0708387637";
 

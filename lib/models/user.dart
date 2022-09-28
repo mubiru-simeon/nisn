@@ -85,12 +85,12 @@ class UserModel {
     @required String phoneNumber,
     @required String username,
     @required String profilePic,
-    @required String type,
+    String type,
     @required String email,
-    @required String address,
-    @required String whatsappNumber,
-    @required String gender,
-    @required String registerer,
+    String address,
+     String whatsappNumber,
+    String gender,
+    String registerer,
     @required List images,
   }) {
     _phoneNumber = phoneNumber;
