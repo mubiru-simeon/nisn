@@ -55,6 +55,7 @@ dependencies:
   fluttertoast: ^8.0.8
   image_cropper: ^3.0.0
   file_picker: ^5.0.1
+  csv: ^5.0.1
   firebase_storage: ^10.2.15
   flutter_spinkit: ^5.1.0
 

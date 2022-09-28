@@ -1,5 +1,7 @@
+import 'package:csv/csv.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:nisn/services/communications.dart';
 import 'package:nisn/widgets/custom_divider.dart';
 import 'package:nisn/widgets/informational_box.dart';
 import 'package:nisn/widgets/or_divider.dart';
@@ -7,7 +9,6 @@ import 'package:nisn/widgets/proceed_button.dart';
 import 'package:nisn/widgets/top_back_bar.dart';
 
 import '../constants/ui.dart';
-import '../services/date_service.dart';
 
 class SubmitDataBottomSheet extends StatefulWidget {
   SubmitDataBottomSheet({
@@ -323,10 +324,93 @@ class _SubmitDataBottomSheetState extends State<SubmitDataBottomSheet> {
         ProceedButton(
           processable: true,
           processing: processing,
-          onTap: () {},
+          onTap: () {
+            if (quotationDocuments.isNotEmpty) {
+              upload();
+            } else {
+              if (latitude.text.trim().isEmpty) {
+                CommunicationServices().showToast(
+                  "Please provide a latitude",
+                  Colors.red,
+                );
+              } else {
+                if (longitude.text.trim().isEmpty) {
+                  CommunicationServices().showToast(
+                    "Please provide a longitude",
+                    Colors.red,
+                  );
+                } else {
+                  if (altitude.text.trim().isEmpty) {
+                    CommunicationServices().showToast(
+                      "Please provide an altitude",
+                      Colors.red,
+                    );
+                  } else {
+                    if (geox.text.trim().isEmpty) {
+                      CommunicationServices().showToast(
+                        "Please provide a geo-x",
+                        Colors.red,
+                      );
+                    } else {
+                      if (geoy.text.trim().isEmpty) {
+                        CommunicationServices().showToast(
+                          "Please provide a geo-y",
+                          Colors.red,
+                        );
+                      } else {
+                        if (geovx.text.trim().isEmpty) {
+                          CommunicationServices().showToast(
+                            "Please provide a geo-vx",
+                            Colors.red,
+                          );
+                        } else {
+                          if (geovy.text.trim().isEmpty) {
+                            CommunicationServices().showToast(
+                              "Please provide a geo-vy",
+                              Colors.red,
+                            );
+                          } else {
+                            if (geovz.text.trim().isEmpty) {
+                              CommunicationServices().showToast(
+                                "Please provide a geo-vz",
+                                Colors.red,
+                              );
+                            } else {
+                              if (electronDensity.text.trim().isEmpty) {
+                                CommunicationServices().showToast(
+                                  "Please provide an electron density",
+                                  Colors.red,
+                                );
+                              } else {
+                                upload();
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
           text: "Upload",
         )
       ]),
     );
+  }
+
+  upload() async {
+    setState(() {
+      processing = true;
+    });
+
+    List pp = [];
+
+    for (var e in quotationDocuments) {
+      List dd = CsvToListConverter().convert(e.path);
+
+      print(dd.toString());
+    }
   }
 }
