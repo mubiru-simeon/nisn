@@ -1,11 +1,12 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:nisn/constants/basic.dart';
+import 'package:nisn/views/dashboard.dart';
 
 import '../constants/images.dart';
 import '../services/auth_provider_widget.dart';
 import '../services/navigation.dart';
 import '../widgets/pulser.dart';
-import 'home_screen.dart';
 
 class SplashScreenView extends StatefulWidget {
   SplashScreenView({Key key}) : super(key: key);
@@ -23,7 +24,7 @@ class _SplashScreenViewState extends State<SplashScreenView> {
 
   void navigationPage() async {
     NavigationService().pushReplacement(
-      HomeScreen(),
+      Dashboard(),
     );
   }
 
@@ -39,29 +40,53 @@ class _SplashScreenViewState extends State<SplashScreenView> {
     return Scaffold(
       body: SizedBox(
         height: MediaQuery.of(context).size.height,
-        child: SafeArea(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Spacer(
-                flex: 1,
-              ),
-              Center(
-                child: Pulser(
-                  duration: 800,
-                  child: Image(
-                    width: MediaQuery.of(context).size.width * 0.6,
-                    image: AssetImage(
-                      logo,
-                    ),
-                  ),
+        child: Stack(
+          children: [
+            SizedBox.expand(
+              child: FittedBox(
+                fit: BoxFit.cover,
+                child: Image.asset(
+                  galaxy,
+                  color: Colors.black.withOpacity(0.7),
+                  colorBlendMode: BlendMode.darken,
                 ),
               ),
-              Spacer(
-                flex: 2,
+            ),
+            SafeArea(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Spacer(
+                    flex: 1,
+                  ),
+                  Center(
+                    child: Pulser(
+                      duration: 800,
+                      child: Image(
+                        width: MediaQuery.of(context).size.width * 0.6,
+                        image: AssetImage(
+                          logoLight,
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  Text(
+                    capitalizedAppName,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                    ),
+                  ),
+                  Spacer(
+                    flex: 2,
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

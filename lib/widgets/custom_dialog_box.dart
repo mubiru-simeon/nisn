@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import '../constants/constants.dart';
@@ -67,7 +66,7 @@ class _CustomDialogBoxState extends State<CustomDialogBox> {
                     width: 80,
                     height: 80,
                     image: AssetImage(
-                      logo,
+                      logoDark,
                     ),
                   ),
                   CustomSizedBox(

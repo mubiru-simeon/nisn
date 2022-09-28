@@ -2,7 +2,7 @@ String appName = 'nisn';
 const capitalizedAppName = "NISN";
 
 String appCatchPhrase =
-    "Welcome to $capitalizedAppName. This system is meant to easily manage the entire procurement system for Maisha Medical Supplies.";
+    "Welcome to $capitalizedAppName. This app is meant to visualize data submited by our community of Amateur Radios from all over the world.";
 int versionNumber = 1;
 
 String simeonMessage = appCatchPhrase;
@@ -13,13 +13,12 @@ String algoliaAppID = "3SUWKZNUK8";
 String searchApiKey = "2263d9b056d2a27fb13fd71fe91f1177";
 
 class Configurations {
-  static const _apiKey = "AIzaSyCVrkAtisr2r2Q2LsRsUOAx0ai94kXhFjk";
-  static const _projectId = "maisha-medical-supplies";
-  static const _senderID = "413526706214";
-  static const _storageBucket = "maisha-medical-supplies.appspot.com";
-  static const _appId = "1:413526706214:web:0ecaadbe7646931de53ee7";
-  static const _databaseUrl =
-      'https://maisha-medical-supplies-default-rtdb.firebaseio.com';
+  static const _apiKey = "AIzaSyAL7gB01-997q8jnT_JlBjMHRWXDjhjEPw";
+  static const _projectId = "nisn-2b222";
+  static const _senderID = "1097279434073";
+  static const _storageBucket = "nisn-2b222.appspot.com";
+  static const _appId = "1:1097279434073:web:fcd688e3ccf307e620f048";
+  static const _databaseUrl = 'https://nisn-2b222-default-rtdb.firebaseio.com';
 
   String get apiKey => _apiKey;
   String get projectId => _projectId;

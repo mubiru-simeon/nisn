@@ -46,7 +46,7 @@ class _AboutUsState extends State<AboutUs> {
                                 child: Image(
                                   height: 100,
                                   image: AssetImage(
-                                    logo,
+                                    logoDark,
                                   ),
                                 ),
                               ),
@@ -98,7 +98,7 @@ class _AboutUsState extends State<AboutUs> {
                           color: Colors.grey,
                         ),
                       ),
-                     /*  CustomSizedBox(
+                      /*  CustomSizedBox(
                         sbSize: SBSize.normal,
                         height: true,
                       ),

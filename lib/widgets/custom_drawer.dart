@@ -49,7 +49,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                     ),
                     SingleImage(
                       height: 200,
-                      image: logo,
+                      image: logoDark,
                     ),
                     Text(
                       capitalizedAppName.toString().toUpperCase(),
