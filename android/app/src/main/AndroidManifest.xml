@@ -4,6 +4,10 @@
         android:label="NISN"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+
+        <meta-data android:name="com.google.android.geo.API_KEY"
+               android:value="AIzaSyAL7gB01-997q8jnT_JlBjMHRWXDjhjEPw"/>
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

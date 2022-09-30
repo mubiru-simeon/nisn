@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:csv/csv.dart';
+import 'package:intl/intl.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:nisn/models/nisn_data.dart';
@@ -17,6 +18,7 @@ import 'package:nisn/widgets/proceed_button.dart';
 import 'package:nisn/widgets/top_back_bar.dart';
 
 import '../constants/ui.dart';
+import '../services/storage_services.dart';
 
 class SubmitDataBottomSheet extends StatefulWidget {
   SubmitDataBottomSheet({
@@ -30,14 +32,13 @@ class SubmitDataBottomSheet extends StatefulWidget {
 class _SubmitDataBottomSheetState extends State<SubmitDataBottomSheet> {
   TextEditingController latitude = TextEditingController();
   TextEditingController longitude = TextEditingController();
-  TextEditingController altitude = TextEditingController();
+  TextEditingController altitudeController = TextEditingController();
   TextEditingController geox = TextEditingController();
   TextEditingController geoy = TextEditingController();
   TextEditingController geoz = TextEditingController();
   TextEditingController geovx = TextEditingController();
   TextEditingController geovy = TextEditingController();
   TextEditingController geovz = TextEditingController();
-  TextEditingController electronDensity = TextEditingController();
   List<PlatformFile> quotationDocuments = [];
   DateTime dateOfRecord = DateTime.now();
   bool processing = false;
@@ -201,7 +202,7 @@ class _SubmitDataBottomSheetState extends State<SubmitDataBottomSheet> {
                       height: 10,
                     ),
                     TextField(
-                      controller: altitude,
+                      controller: altitudeController,
                       decoration: InputDecoration(
                         hintText: "Altitude",
                       ),
@@ -258,15 +259,6 @@ class _SubmitDataBottomSheetState extends State<SubmitDataBottomSheet> {
                       controller: geovz,
                       decoration: InputDecoration(
                         hintText: "Geo-VZ",
-                      ),
-                    ),
-                    SizedBox(
-                      height: 10,
-                    ),
-                    TextField(
-                      controller: electronDensity,
-                      decoration: InputDecoration(
-                        hintText: "Electron Density",
                       ),
                     ),
                     SizedBox(
@@ -333,7 +325,7 @@ class _SubmitDataBottomSheetState extends State<SubmitDataBottomSheet> {
         ProceedButton(
           processable: true,
           processing: processing,
-          onTap: () {
+          onTap: () async {
             if (quotationDocuments.isNotEmpty) {
               if (AuthProvider.of(context).auth.isSignedIn()) {
                 upload();
@@ -362,7 +354,7 @@ class _SubmitDataBottomSheetState extends State<SubmitDataBottomSheet> {
                     Colors.red,
                   );
                 } else {
-                  if (altitude.text.trim().isEmpty) {
+                  if (altitudeController.text.trim().isEmpty) {
                     CommunicationServices().showToast(
                       "Please provide an altitude",
                       Colors.red,
@@ -398,28 +390,19 @@ class _SubmitDataBottomSheetState extends State<SubmitDataBottomSheet> {
                                 Colors.red,
                               );
                             } else {
-                              if (electronDensity.text.trim().isEmpty) {
-                                CommunicationServices().showToast(
-                                  "Please provide an electron density",
-                                  Colors.red,
-                                );
+                              if (AuthProvider.of(context).auth.isSignedIn()) {
+                                upload();
                               } else {
-                                if (AuthProvider.of(context)
-                                    .auth
-                                    .isSignedIn()) {
-                                  upload();
-                                } else {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) {
-                                      return NotLoggedInDialogBox(
-                                        onLoggedIn: (v) {
-                                          upload();
-                                        },
-                                      );
-                                    },
-                                  );
-                                }
+                                showDialog(
+                                  context: context,
+                                  builder: (context) {
+                                    return NotLoggedInDialogBox(
+                                      onLoggedIn: (v) {
+                                        upload();
+                                      },
+                                    );
+                                  },
+                                );
                               }
                             }
                           }
@@ -437,10 +420,20 @@ class _SubmitDataBottomSheetState extends State<SubmitDataBottomSheet> {
     );
   }
 
+  bool areWeOkay(dynamic element) {
+    return !element.toString().toLowerCase().contains("time") &&
+        !element.toString().toLowerCase().contains("#");
+  }
+
   upload() async {
     setState(() {
       processing = true;
     });
+
+    CommunicationServices().showToast(
+      "Uploding records. This may take a while",
+      Colors.green,
+    );
 
     if (quotationDocuments.isNotEmpty) {
       List pp = [];
@@ -454,26 +447,12 @@ class _SubmitDataBottomSheetState extends State<SubmitDataBottomSheet> {
             )
             .toList();
 
-        int headerIndex;
-
-        for (var v in df) {
-          if (v[0].contains("time")) {
-            headerIndex = df.indexOf(v);
-          }
-        }
-
-        if (headerIndex != null) {
-          df.removeAt(headerIndex);
-        }
-
         for (var v in df) {
           bool allGood = true;
 
-          v.forEach((b) {
-            if (b.toString().toLowerCase().contains("time")) {
-              allGood = false;
-            }
-          });
+          if (!areWeOkay(v.toString())) {
+            allGood = false;
+          }
 
           if (allGood) {
             pp.add(v);
@@ -484,47 +463,98 @@ class _SubmitDataBottomSheetState extends State<SubmitDataBottomSheet> {
       int count = 0;
 
       for (var element in pp) {
-        FirebaseFirestore.instance.collection(NisnData.DIRECTORY).add({
-          NisnData.ADDER: AuthProvider.of(context).auth.getCurrentUID(),
-          NisnData.ALTITUDE: element[3],
-          NisnData.APPROVED: false,
-          NisnData.DATEADDED: DateTime.now().millisecondsSinceEpoch,
-          NisnData.TIME: DateTime.now().millisecondsSinceEpoch,
-          NisnData.GEOX: element[4],
-          NisnData.GEOY: element[5],
-          NisnData.GEOZ: element[6],
-          NisnData.GEOVX: element[7],
-          NisnData.GEOVY: element[8],
-          NisnData.GEOVZ: element[9],
-          if (element.length > 10) NisnData.ELECTRONDENSITY: element[10],
-        });
+        try {
+          dynamic lat = element[1];
+          dynamic long = element[2];
+          dynamic geovy = element[8];
+          dynamic geovx = element[7];
+          dynamic geox = element[4];
+          dynamic altitude = element[3];
+          dynamic geoy = element[5];
+          dynamic geoz = element[6];
+          dynamic geovz = element[9];
+          DateTime dateTime = DateFormat("d/M/y hh:mm").parse(element[0]);
 
-        count++;
+          dynamic electronDensity = getElectronDensity(altitude);
+
+          await FirebaseFirestore.instance.collection(NisnData.DIRECTORY).add({
+            NisnData.ADDER: AuthProvider.of(context).auth.getCurrentUID(),
+            NisnData.ALTITUDE: altitude,
+            NisnData.APPROVED: false,
+            NisnData.DATEADDED: DateTime.now().millisecondsSinceEpoch,
+            NisnData.TIME: dateTime.millisecondsSinceEpoch,
+            NisnData.GEOX: geox,
+            NisnData.GEOY: geoy,
+            NisnData.GEOZ: geoz,
+            NisnData.GEOVX: geovx,
+            NisnData.GEOVY: geovy,
+            NisnData.LATITUDE: lat,
+            NisnData.LONGITUDE: long,
+            NisnData.GEOVZ: geovz,
+            if (element.length > 10) NisnData.ELECTRONDENSITY: electronDensity,
+          }).then((value) async {
+            await StorageServices().handleLocationStuffForItems(
+              double.parse(lat.toString().trim()),
+              double.parse(long.toString().trim()),
+              value.id,
+              null,
+              null,
+              null,
+              NisnData.DIRECTORY,
+            );
+          });
+
+          count++;
+        } catch (e) {
+          setState(() {
+            processing = false;
+          });
+
+          CommunicationServices().showToast(
+            e.toString(),
+            Colors.red,
+          );
+        }
       }
 
       if (count == pp.length) {
         CommunicationServices().showToast(
-          "Successfully added the data",
+          "Successfully uploaded the records.",
           Colors.green,
         );
 
         NavigationService().pop();
       }
     } else {
+      double altitude = double.parse(altitudeController.text.trim());
+      dynamic electronDensity = getElectronDensity(altitude);
+
       FirebaseFirestore.instance.collection(NisnData.DIRECTORY).add({
         NisnData.ADDER: AuthProvider.of(context).auth.getCurrentUID(),
-        NisnData.ALTITUDE: double.parse(altitude.text.trim()),
+        NisnData.ALTITUDE: double.parse(altitudeController.text.trim()),
         NisnData.APPROVED: false,
         NisnData.DATEADDED: DateTime.now().millisecondsSinceEpoch,
         NisnData.TIME: dateOfRecord.millisecondsSinceEpoch,
         NisnData.GEOX: double.parse(geox.text.trim()),
         NisnData.GEOY: double.parse(geoy.text.trim()),
         NisnData.GEOZ: double.parse(geoz.text.trim()),
+        NisnData.LATITUDE: double.parse(latitude.text.trim()),
+        NisnData.LONGITUDE: double.parse(longitude.text.trim()),
         NisnData.GEOVX: double.parse(geovx.text.trim()),
         NisnData.GEOVY: double.parse(geovy.text.trim()),
         NisnData.GEOVZ: double.parse(geovz.text.trim()),
-        NisnData.ELECTRONDENSITY: double.parse(electronDensity.text.trim()),
+        NisnData.ELECTRONDENSITY: electronDensity,
       }).then((value) {
+        StorageServices().handleLocationStuffForItems(
+          double.parse(latitude.text.trim()),
+          double.parse(longitude.text.trim()),
+          value.id,
+          null,
+          null,
+          null,
+          NisnData.DIRECTORY,
+        );
+
         CommunicationServices().showToast(
           "Successfully added the record",
           Colors.green,
@@ -533,5 +563,11 @@ class _SubmitDataBottomSheetState extends State<SubmitDataBottomSheet> {
         NavigationService().pop();
       });
     }
+  }
+
+  double getElectronDensity(dynamic altitude) {
+    dynamic electronDensity = ((9 * 10 ^ 10) / 150) * altitude;
+
+    return electronDensity;
   }
 }

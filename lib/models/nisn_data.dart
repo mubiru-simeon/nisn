@@ -27,10 +27,14 @@ class NisnData {
   dynamic _geoz;
   dynamic _geovx;
   dynamic _geovy;
+  String _id;
   dynamic _geovz;
+  int _date;
   dynamic _electronDensity;
 
   dynamic get lat => _lat;
+  String get id => _id;
+  int get date => _date;
   dynamic get long => _long;
   dynamic get alt => _alt;
   dynamic get geox => _geox;
@@ -46,10 +50,13 @@ class NisnData {
 
     _geovx = pp[GEOVX];
     _geovy = pp[GEOVY];
+    _date = pp[DATEADDED];
+    _id = snapshot.id;
     _alt = pp[ALTITUDE];
     _electronDensity = pp[ELECTRONDENSITY];
     _geovz = pp[GEOVZ];
     _geox = pp[GEOX];
+    _geoz = pp[GEOZ];
     _geoy = pp[GEOY];
     _lat = pp[LATITUDE];
     _long = pp[LONGITUDE];

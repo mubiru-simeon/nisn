@@ -1,16 +1,75 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../constants/basic.dart';
+import '../models/geohashing_item.dart';
 import '../models/notification.dart';
 import '../models/user.dart';
 import 'auth_provider_widget.dart';
 import 'communications.dart';
+import 'geo_hashing.dart';
+import 'location_service.dart';
 import 'map_generation.dart';
 
 class StorageServices {
-   sendVerificationEmail(
+  Future<String> handleLocationStuffForItems(
+    dynamic lat,
+    dynamic long,
+    String thingID,
+    String country,
+    String city,
+    String address,
+    String directory,
+  ) async {
+    if (country != null) {
+      await FirebaseFirestore.instance
+          .collection(directory)
+          .doc(thingID)
+          .update(
+        {
+          GeoHashedItem.ADDRESS: address,
+          GeoHashedItem.COUNTRY: country,
+          GeoHashedItem.CITY: city,
+        },
+      );
+
+      return "done";
+    } else {
+      GeoFirePoint geoFirePoint = Geoflutterfire().point(
+        latitude: double.parse(lat.toString()),
+        longitude: double.parse(long.toString()),
+      );
+
+      return await LocationService()
+          .getAddressFromLatLng(LatLng(
+              double.parse(long.toString()), double.parse(long.toString())))
+          .then(
+        (value) {
+          {
+            if (value != null) {
+              FirebaseFirestore.instance
+                  .collection(directory)
+                  .doc(thingID)
+                  .update(
+                {
+                  GeoHashedItem.ADDRESS: value["text"],
+                  GeoHashedItem.COUNTRY: value["pla"].country,
+                  GeoHashedItem.CITY: value["pla"].locality,
+                  GeoHashedItem.POSITION: geoFirePoint.data,
+                },
+              );
+            }
+
+            return "blegm";
+          }
+        },
+      );
+    }
+  }
+
+  sendVerificationEmail(
     String email,
     BuildContext context,
   ) {
@@ -58,8 +117,8 @@ class StorageServices {
       userID: token,
     });
   }
-  
-   createNewUser({
+
+  createNewUser({
     @required String token,
     @required String phoneNumber,
     @required String email,
@@ -114,8 +173,8 @@ class StorageServices {
       },
     );
   }
-  
-   notifyAboutLogin(
+
+  notifyAboutLogin(
     String uid,
   ) {
     NotificationModel not = NotificationModel.fromData(
@@ -135,7 +194,7 @@ class StorageServices {
           ),
         );
   }
-  
+
   updateLastLogin(String uid) {
     FirebaseDatabase.instance
         .ref()
@@ -146,7 +205,7 @@ class StorageServices {
     });
   }
 
-   updateLastLogout(String uid) {
+  updateLastLogout(String uid) {
     FirebaseDatabase.instance
         .ref()
         .child(UserModel.LASTLOGOUTTIME)

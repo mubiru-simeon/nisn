@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:nisn/services/ui_services.dart';
 import 'package:nisn/views/data_view.dart';
 import 'package:nisn/views/info_view.dart';
+import 'package:nisn/views/earth_view.dart';
+import 'package:nisn/widgets/custom_drawer.dart';
 import 'package:nisn/widgets/submit_data_bottom_sheet.dart';
 
 class Dashboard extends StatefulWidget {
@@ -15,18 +18,22 @@ class Dashboard extends StatefulWidget {
 
 class _DashboardState extends State<Dashboard> with TickerProviderStateMixin {
   List<Widget> pages = [];
-  PageController controller = PageController();
-  int currentIndex = 0;
+  PageController controller = PageController(
+    initialPage: 2
+  );
+  int currentIndex = 2;
 
   @override
   Widget build(BuildContext context) {
     pages = [
       InfoView(),
       DataView(),
+      EarthView(),
       Container(),
     ];
 
     return Scaffold(
+      drawer: CustomDrawer(),
       body: PageView(
         controller: controller,
         physics: NeverScrollableScrollPhysics(),
@@ -52,7 +59,12 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin {
             icon: Icon(
               Icons.data_array,
             ),
-            label: "Data",
+            label: "Raw Data",
+          ), BottomNavigationBarItem(
+            icon: Icon(
+              FontAwesomeIcons.earthAmericas,
+            ),
+            label: "Earth",
           ),
           BottomNavigationBarItem(
             icon: Icon(
@@ -66,7 +78,7 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin {
   }
 
   handleTap(int v) {
-    if (v != 2) {
+    if (v != 3) {
       controller.jumpToPage(v);
     } else {
       UIServices().showDatSheet(

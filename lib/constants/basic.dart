@@ -2,16 +2,13 @@ String appName = 'nisn';
 const capitalizedAppName = "NISN";
 
 String appCatchPhrase =
-    "Welcome to $capitalizedAppName. This app is meant to visualize data submited by our community of Amateur Radios from all over the world.";
+    "Welcome to $capitalizedAppName. This app is meant to visualize data submited by our community of Amateur Radio Operators from all over the world.\n\nIt was inspired by the NASA Challenge 2022 and was pioneered by a dedicated team of 5 engineering students.\n1. Namugwanya Mary Patience\n2.Inebe Millycent\n3. Sebakoni Akram\n4. Simeon Mubiru\n5. Nakiwala Leticia";
 int versionNumber = 1;
 
+String googleMapsAPI = "AIzaSyBZz3QZXs9uoA4goPNRn9GIQeRpes3hwF8";
 String simeonMessage = appCatchPhrase;
 String simeonWebsite = "bio.link/dorx";
-String allIndex = "allIndex";
 String dorxPhoneNumber = "0708387637";
-
-String algoliaAppID = "3SUWKZNUK8";
-String searchApiKey = "2263d9b056d2a27fb13fd71fe91f1177";
 
 class Configurations {
   static const _apiKey = "AIzaSyAL7gB01-997q8jnT_JlBjMHRWXDjhjEPw";

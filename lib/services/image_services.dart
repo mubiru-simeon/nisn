@@ -3,7 +3,6 @@ import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:multi_image_picker/multi_image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -205,33 +204,7 @@ class ImageServices {
     BuildContext context,
     int limit,
   ) async {
-    NavigationService().push(
-      ImageWorks(),
-    );
-
-    XFile image = await ImagePicker().pickImage(
-      source: ImageSource.camera,
-    );
-
-    if (image != null) {
-      File ff = File(image.path);
-
-      List<File> images = await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => CropImageView(
-            limit: limit,
-            images: [ff],
-          ),
-        ),
-      );
-
-      Navigator.of(context).pop();
-
-      return images;
-    } else {
-      return [];
-    }
+    return [];
   }
 
   Future<List<String>> uploadImages({

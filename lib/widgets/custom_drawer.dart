@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
+import 'package:nisn/views/about_us_view.dart';
 import '../constants/constants.dart';
-import '../models/thing_type.dart';
 import '../models/user.dart';
 import '../services/auth_provider_widget.dart';
 import '../services/navigation.dart';
@@ -31,7 +31,6 @@ class _CustomDrawerState extends State<CustomDrawer> {
 
   @override
   Widget build(BuildContext context) {
-    String mode = box.get(UserModel.ACCOUNTTYPES);
 
     return Drawer(
       child: Padding(
@@ -42,14 +41,29 @@ class _CustomDrawerState extends State<CustomDrawer> {
               child: SingleChildScrollView(
                 child: Column(
                   children: [
-                    SafeArea(
-                      child: SizedBox(
-                        height: 10,
+                    SizedBox(
+                      height: 250,
+                      child: Stack(
+                        children: [
+                          Image.asset(
+                            galaxy,
+                            fit: BoxFit.cover,
+                            width: MediaQuery.of(context).size.width,
+                            height: double.infinity,
+                            color: Colors.black.withOpacity(0.7),
+                            colorBlendMode: BlendMode.darken,
+                          ),
+                          Center(
+                            child: SingleImage(
+                              height: 100,
+                              image: logoLight,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    SingleImage(
-                      height: 200,
-                      image: logoDark,
+                    SizedBox(
+                      height: 10,
                     ),
                     Text(
                       capitalizedAppName.toString().toUpperCase(),
@@ -59,16 +73,24 @@ class _CustomDrawerState extends State<CustomDrawer> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    if (mode == ThingType.ADMIN)
-                      singleDrawerItem(
-                        label: "All Users",
-                        onTap: () {
-                          NavigationService().push(
-                            AllUsersView(),
-                          );
-                        },
-                        icon: FontAwesomeIcons.user,
-                      ),
+                    singleDrawerItem(
+                      label: "All Users",
+                      onTap: () {
+                        NavigationService().push(
+                          AllUsersView(),
+                        );
+                      },
+                      icon: FontAwesomeIcons.user,
+                    ),
+                    singleDrawerItem(
+                      label: "About Us",
+                      onTap: () {
+                        NavigationService().push(
+                          AboutUs(),
+                        );
+                      },
+                      icon: FontAwesomeIcons.info,
+                    ),
                   ],
                 ),
               ),
@@ -89,6 +111,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                         box.clear();
                         AuthProvider.of(context).auth.signOut();
                       },
+
                       showOtherButton: true,
                     );
                   },
