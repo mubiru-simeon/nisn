@@ -5,6 +5,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:nisn/views/dashboard.dart';
 
 import 'constants/basic.dart';
+import 'constants/core.dart';
 import 'constants/ui.dart';
 import 'models/user.dart';
 import 'services/auth_provider_widget.dart';

@@ -1,7 +1,7 @@
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:nisn/constants/basic.dart';
+import 'package:nisn/constants/core.dart';
 import 'package:nisn/models/delivery_location.dart';
 import 'package:nisn/services/auth_provider_widget.dart';
 import 'package:nisn/widgets/custom_dialog_box.dart';
