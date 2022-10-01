@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -25,13 +26,20 @@ class DetailedAreaView extends StatefulWidget {
 
 class _DetailedAreaViewState extends State<DetailedAreaView> {
   GoogleMapController mapController;
-  TrackballBehavior _trackballBehavior;
+  List<_ChartData> chartData = [];
+  TrackballBehavior _topGraphTrackballBehavior;
+  TrackballBehavior _middleGraphTrackballBehavior;
   Set<Marker> markers = {};
 
   @override
   void initState() {
     super.initState();
-    _trackballBehavior = TrackballBehavior(
+    _topGraphTrackballBehavior = TrackballBehavior(
+      enable: true,
+      activationMode: ActivationMode.singleTap,
+    );
+
+    _middleGraphTrackballBehavior = TrackballBehavior(
       enable: true,
       activationMode: ActivationMode.singleTap,
     );
@@ -121,45 +129,110 @@ class _DetailedAreaViewState extends State<DetailedAreaView> {
                                 },
                               );
 
+                              for (var element in pp) {
+                                var freq = sqrt(
+                                    (element.electronDensity * 100000000000) /
+                                        (1.24 * 10000));
+
+                                chartData.add(
+                                  _ChartData(
+                                    element.alt,
+                                    element.electronDensity,
+                                    freq,
+                                  ),
+                                );
+                              }
+
                               return pp.isEmpty
                                   ? Center(
                                       child: Text(
                                           "Insufficient Ionosphere Data for this region"),
                                     )
-                                  : SfCartesianChart(
-                                      plotAreaBorderWidth: 0,
-                                      title: ChartTitle(
-                                        text:
-                                            'Graph of Electron Density Against Altitude',
-                                      ),
-                                      legend: Legend(isVisible: true),
-                                      primaryXAxis: CategoryAxis(
-                                        majorGridLines: const MajorGridLines(
-                                          width: 0,
-                                        ),
-                                        labelRotation: -45,
-                                      ),
-                                      primaryYAxis: NumericAxis(
-                                        axisLine: const AxisLine(width: 0),
-                                        majorTickLines:
-                                            const MajorTickLines(size: 0),
-                                      ),
-                                      series: <
-                                          StackedLineSeries<NisnData, String>>[
-                                        StackedLineSeries<NisnData, String>(
-                                          dataSource: pp,
-                                          xValueMapper: (NisnData sales, _) =>
-                                              sales.electronDensity
-                                                  .toStringAsFixed(1),
-                                          yValueMapper: (NisnData sales, _) =>
-                                              sales.alt,
-                                          name: 'Data',
-                                          markerSettings: const MarkerSettings(
-                                            isVisible: true,
+                                  : Column(
+                                      children: [
+                                        SfCartesianChart(
+                                          plotAreaBorderWidth: 0,
+                                          title: ChartTitle(
+                                            text:
+                                                'Graph of Electron Density Against Altitude',
                                           ),
+                                          legend: Legend(isVisible: true),
+                                          primaryXAxis: CategoryAxis(
+                                            title: AxisTitle(
+                                              text:
+                                                  "Electron Density in exp11 (e/m^3)",
+                                            ),
+                                            majorGridLines:
+                                                const MajorGridLines(
+                                              width: 0,
+                                            ),
+                                            labelRotation: -45,
+                                          ),
+                                          primaryYAxis: NumericAxis(
+                                            title: AxisTitle(
+                                              text: "Altitude (km)",
+                                            ),
+                                            axisLine: const AxisLine(width: 0),
+                                            majorTickLines:
+                                                const MajorTickLines(size: 0),
+                                          ),
+                                          series: <
+                                              StackedLineSeries<NisnData,
+                                                  String>>[
+                                            StackedLineSeries<NisnData, String>(
+                                              dataSource: pp,
+                                              xValueMapper:
+                                                  (NisnData sales, _) => sales
+                                                      .electronDensity
+                                                      .toStringAsFixed(1),
+                                              yValueMapper:
+                                                  (NisnData sales, _) =>
+                                                      sales.alt,
+                                              name: 'Data',
+                                              markerSettings:
+                                                  const MarkerSettings(
+                                                isVisible: true,
+                                              ),
+                                            ),
+                                          ],
+                                          trackballBehavior:
+                                              _topGraphTrackballBehavior,
                                         ),
+                                        SizedBox(
+                                          height: 25,
+                                        ),
+                                        SfCartesianChart(
+                                          plotAreaBorderWidth: 0,
+                                          title: ChartTitle(
+                                            text:
+                                                'Graph of Electron Density and Critical Frequency Against Altitude',
+                                          ),
+                                          legend: Legend(
+                                              isVisible: true,
+                                              position: LegendPosition.bottom),
+                                          primaryXAxis: CategoryAxis(
+                                            majorGridLines:
+                                                const MajorGridLines(
+                                              width: 0,
+                                            ),
+                                            title: AxisTitle(
+                                              text: "Altitude (km)",
+                                            ),
+                                            labelRotation: -45,
+                                          ),
+                                          primaryYAxis: NumericAxis(
+                                            axisLine: const AxisLine(width: 0),
+                                            majorTickLines:
+                                                const MajorTickLines(size: 0),
+                                          ),
+                                          series: getMiddleGraphData(),
+                                          trackballBehavior:
+                                              _middleGraphTrackballBehavior,
+                                        ),
+                                        SizedBox(
+                                          height: 20,
+                                        )
                                       ],
-                                      trackballBehavior: _trackballBehavior,
                                     );
                             }
                           }
@@ -172,6 +245,27 @@ class _DetailedAreaViewState extends State<DetailedAreaView> {
         ),
       ),
     );
+  }
+
+  List<LineSeries<_ChartData, num>> getMiddleGraphData() {
+    return <LineSeries<_ChartData, num>>[
+      LineSeries<_ChartData, num>(
+          animationDuration: 2500,
+          dataSource: chartData,
+          xValueMapper: (_ChartData sales, _) => sales.x,
+          yValueMapper: (_ChartData sales, _) => sales.y,
+          width: 2,
+          name: 'Electron Density (e/m^3)',
+          markerSettings: const MarkerSettings(isVisible: true)),
+      LineSeries<_ChartData, num>(
+          animationDuration: 2500,
+          dataSource: chartData,
+          width: 2,
+          name: 'Critical Frequency (KHz)',
+          xValueMapper: (_ChartData sales, _) => sales.x,
+          yValueMapper: (_ChartData sales, _) => sales.y2,
+          markerSettings: const MarkerSettings(isVisible: true))
+    ];
   }
 
   @override
@@ -192,4 +286,11 @@ class _DetailedAreaViewState extends State<DetailedAreaView> {
           10),
     );
   }
+}
+
+class _ChartData {
+  _ChartData(this.x, this.y, this.y2);
+  final double x;
+  final double y;
+  final double y2;
 }

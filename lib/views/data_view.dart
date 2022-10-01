@@ -100,7 +100,7 @@ class _DataViewState extends State<DataView> with AutomaticKeepAliveClientMixin 
                   height: 10,
                 ),
                 Text(
-                    "Electron Density: ${TextService().putCommas(nisnData.electronDensity.toString())}"),
+                    "Electron Density (e/m^3): ${TextService().putCommas((nisnData.electronDensity * 100000000000).toStringAsFixed(2))}"),
                 Text("Submitted on ${DateService().dateFromMilliseconds(
                   nisnData.date,
                 )}")

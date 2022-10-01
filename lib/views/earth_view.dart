@@ -5,9 +5,11 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:material_floating_search_bar/material_floating_search_bar.dart';
 import 'package:nisn/models/nisn_data.dart';
 import 'package:nisn/services/navigation.dart';
+import 'package:nisn/services/ui_services.dart';
 import 'package:nisn/views/detailed_area_view.dart';
 import 'package:nisn/views/temporal_and_spatial_view.dart';
 import 'package:nisn/widgets/proceed_button.dart';
+import 'package:nisn/widgets/year_selector_bottom_sheet.dart';
 
 import '../constants/images.dart';
 import '../constants/ui.dart';
@@ -94,33 +96,61 @@ class _EarthViewState extends State<EarthView>
                 ProceedButton(
                   processable: true,
                   processing: processing,
-                  onTap: () {
-                    setState(() {
-                      processing = true;
-                    });
+                  onTap: () async {
+                    int year = await UIServices().showDatSheet(
+                      YearSelectorBottomSheet(),
+                      true,
+                      context,
+                    );
 
-                    List<NisnData> data = [];
-
-                    FirebaseFirestore.instance
-                        .collection(NisnData.DIRECTORY)
-                        .get()
-                        .then((n) {
-                      for (var element in n.docs) {
-                        NisnData nisnData = NisnData.fromSnapshot(element);
-
-                        data.add(nisnData);
-                      }
+                    if (year != null) {
+                      DateTime dd = DateTime(
+                        year,
+                        1,
+                        1,
+                      );
 
                       setState(() {
-                        processing = false;
+                        processing = true;
                       });
 
-                      NavigationService().push(
-                        TemporalAndSpatialView(
-                          nisnData: data,
-                        ),
+                      List<NisnData> data = [];
+
+                      FirebaseFirestore.instance
+                          .collection(NisnData.DIRECTORY)
+                          .where(
+                            NisnData.TIME,
+                            isLessThanOrEqualTo: dd
+                                .add(Duration(days: 365))
+                                .millisecondsSinceEpoch,
+                          )
+                          .orderBy(NisnData.TIME)
+                          .where(
+                            NisnData.TIME,
+                            isGreaterThanOrEqualTo: dd.millisecondsSinceEpoch,
+                          )
+                          .get()
+                          .then(
+                        (n) {
+                          for (var element in n.docs) {
+                            NisnData nisnData = NisnData.fromSnapshot(element);
+
+                            data.add(nisnData);
+                          }
+
+                          setState(() {
+                            processing = false;
+                          });
+
+                          NavigationService().push(
+                            TemporalAndSpatialView(
+                              nisnData: data,
+                              year: year,
+                            ),
+                          );
+                        },
                       );
-                    });
+                    }
                   },
                   text: "View the High Temporal and high spatial map",
                 ),

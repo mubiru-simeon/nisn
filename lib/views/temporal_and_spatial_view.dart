@@ -12,8 +12,13 @@ import 'package:intl/intl.dart' show NumberFormat;
 import 'package:nisn/widgets/top_back_bar.dart';
 
 class TemporalAndSpatialView extends StatefulWidget {
+  final int year;
   final List<NisnData> nisnData;
-  TemporalAndSpatialView({Key key, @required this.nisnData}) : super(key: key);
+  TemporalAndSpatialView({
+    Key key,
+    @required this.nisnData,
+    @required this.year,
+  }) : super(key: key);
 
   @override
   State<TemporalAndSpatialView> createState() => _TemporalAndSpatialViewState();
@@ -55,7 +60,6 @@ class _TemporalAndSpatialViewState extends State<TemporalAndSpatialView> {
           List<LatLng> polygonList = [];
 
           cordList.first.forEach((v) {
-            print("This is cord for multipolygon ${v.toString()}");
             polygonList.add(
               LatLng(
                 v[0],
@@ -528,8 +532,10 @@ class _TemporalAndSpatialViewState extends State<TemporalAndSpatialView> {
           Padding(
             padding: const EdgeInsets.only(top: 15, bottom: 30),
             child: Align(
-              child: Text('Electron Density',
-                  style: Theme.of(context).textTheme.subtitle1),
+              child: Text(
+                'Average Electron Density for the year ${widget.year}',
+                style: Theme.of(context).textTheme.subtitle1,
+              ),
             ),
           ),
           Expanded(

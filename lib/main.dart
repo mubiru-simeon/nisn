@@ -21,7 +21,6 @@ void main() async {
   final configurations = Configurations();
 
   await Firebase.initializeApp(
-    name: "NISN",
     options: FirebaseOptions(
       databaseURL: configurations.databaseUrl,
       apiKey: configurations.apiKey,
